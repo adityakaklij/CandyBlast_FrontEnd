@@ -1,0 +1,25 @@
+{
+  "name": "sweet-bonanza-mini",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mysten/dapp-kit": "^0.14.47",
+    "@mysten/sui": "^1.14.0",
+    "@tanstack/react-query": "^5.28.0",
+    "canvas-confetti": "^1.9.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.8"
+  }
+}

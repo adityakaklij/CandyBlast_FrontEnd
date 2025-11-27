@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pragmatic Play – Candy BlastMini</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Baloo", "Poppins", sans-serif;
+      background: radial-gradient(circle at top, #ff9ad5 0, #7a42ff 45%, #120c3b 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .game-wrapper {
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.12), rgba(0,0,0,0.5));
+      border-radius: 30px;
+      padding: 24px 28px 30px;
+      width: 900px;
+      max-width: 95vw;
+      box-shadow:
+        0 0 40px rgba(0, 0, 0, 0.6),
+        0 0 80px rgba(255, 255, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-wrapper::before,
+    .game-wrapper::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.7;
+      z-index: -1;
+    }
+
+    .game-wrapper::before {
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, #ff9ad5, transparent);
+      top: -80px;
+      right: -40px;
+      animation: floatCandy 9s ease-in-out infinite;
+    }
+
+    .game-wrapper::after {
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, #ffde7a, transparent);
+      bottom: -100px;
+      left: -50px;
+      animation: floatCandy 11s ease-in-out infinite reverse;
+    }
+
+    @keyframes floatCandy {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50% { transform: translateY(-20px); opacity: 0.9; }
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: 2.1rem;
+      letter-spacing: 0.04em;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    h1 span {
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, #ffde7a, #ff9ad5);
+      -webkit-background-clip: text;
+      color: transparent;
+      margin-left: 8px;
+    }
+
+    .badge {
+      background: rgba(0,0,0,0.45);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #54ffb7;
+      box-shadow: 0 0 12px #54ffb7;
+    }
+
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hud-group {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .hud-item {
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.18), rgba(0,0,0,0.4));
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255,255,255,0.22);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hud-label {
+      opacity: 0.8;
+      font-weight: 500;
+    }
+
+    .hud-value {
+      font-weight: 700;
+    }
+
+    .hud-value.win {
+      color: #ffde7a;
+      text-shadow: 0 0 8px rgba(255,222,122,0.8);
+    }
+
+    .grid-wrapper {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 6px;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.2), rgba(0,0,0,0.65));
+      padding: 8px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cell {
+      width: 80px;
+      max-width: 13vw;
+      aspect-ratio: 1;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      cursor: default;
+      position: relative;
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.6),
+        inset 0 0 0 1px rgba(255,255,255,0.4);
+      transform-style: preserve-3d;
+      transition:
+        transform 0.28s ease,
+        box-shadow 0.28s ease,
+        filter 0.28s ease;
+      background-size: 170% 170%;
+      background-position: center;
+    }
+
+    .cell::after {
+      content: "";
+      position: absolute;
+      inset: 5px 7px 50%;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.35);
+      filter: blur(3px);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .cell.pop-in {
+      animation: popIn 0.35s ease-out forwards;
+    }
+
+    @keyframes popIn {
+      0% { transform: translateY(30px) scale(0.6) rotateX(40deg); opacity: 0; }
+      60% { transform: translateY(-4px) scale(1.06); opacity: 1; }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    .cell.win {
+      animation: winPulse 0.7s ease-in-out infinite alternate;
+      box-shadow:
+        0 0 18px rgba(255,255,255,0.85),
+        0 0 35px rgba(255,222,122,0.9);
+      filter: saturate(1.4);
+    }
+
+    @keyframes winPulse {
+      0% { transform: translateY(-3px) scale(1.03); }
+      100% { transform: translateY(2px) scale(1.07); }
+    }
+
+    /* Candy color themes */
+    .candy-0 { background-image: linear-gradient(135deg, #ff9ad5, #ff4e9a); }
+    .candy-1 { background-image: linear-gradient(135deg, #ffde7a, #ff9a3c); }
+    .candy-2 { background-image: linear-gradient(135deg, #8af4ff, #4ac0ff); }
+    .candy-3 { background-image: linear-gradient(135deg, #b9ff7a, #4ddf5b); }
+    .candy-4 { background-image: linear-gradient(135deg, #ff9a7a, #ff4a45); }
+    .candy-5 { background-image: linear-gradient(135deg, #d1b3ff, #8c6bff); }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .btn {
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      padding: 14px 20px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ffde7a, #ff4e9a);
+      color: #53124f;
+      text-shadow: 0 2px 4px rgba(255,255,255,0.45);
+      box-shadow:
+        0 10px 20px rgba(0,0,0,0.7),
+        0 0 10px rgba(255,255,255,0.35);
+      transform: translateY(0);
+      transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        filter 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: -100%;
+      left: -40%;
+      width: 40%;
+      height: 280%;
+      background: linear-gradient(120deg, rgba(255,255,255,0.75), transparent);
+      transform: skewX(-30deg);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow:
+        0 15px 25px rgba(0,0,0,0.8),
+        0 0 18px rgba(255,255,255,0.5);
+      filter: brightness(1.03);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px) scale(0.98);
+      box-shadow:
+        0 7px 16px rgba(0,0,0,0.7);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+    }
+
+    .btn.shine::after {
+      animation: shine 0.9s ease-out;
+    }
+
+    @keyframes shine {
+      0% { opacity: 0; transform: translateX(-120%) skewX(-30deg); }
+      50% { opacity: 1; }
+      100% { opacity: 0; transform: translateX(240%) skewX(-30deg); }
+    }
+
+    .btn-secondary {
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.7);
+    }
+
+    .message {
+      margin-top: 10px;
+      min-height: 26px;
+      font-size: 0.95rem;
+      text-align: center;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.65);
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
+    }
+
+    .message.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .message.big-win {
+      font-size: 1.3rem;
+      color: #ffde7a;
+      text-shadow:
+        0 0 8px rgba(255,255,255,0.9),
+        0 0 18px rgba(255,222,122,0.9);
+      animation: bounceMsg 0.7s ease-out 1;
+    }
+
+    @keyframes bounceMsg {
+      0% { transform: translateY(20px) scale(0.7); opacity: 0; }
+      60% { transform: translateY(-4px) scale(1.08); opacity: 1; }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    .footer-note {
+      margin-top: 6px;
+      font-size: 0.73rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    .footer-note span {
+      opacity: 0.6;
+    }
+
+    @media (max-width: 780px) {
+      .grid-wrapper {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+      .btn {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .cell {
+        font-size: 1.6rem;
+        border-radius: 14px;
+      }
+      .game-wrapper {
+        padding: 16px;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-wrapper">
+    <header>
+      <h1>Candy Blast<span>Mini</span></h1>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Candy Spin • Fun Play
+      </div>
+    </header>
+
+    <div class="hud">
+      <div class="hud-group">
+        <div class="hud-item">
+          <span class="hud-label">Balance</span>
+          <span class="hud-value" id="balance">1000</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">Bet</span>
+          <span class="hud-value" id="bet">20</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">Last Win</span>
+          <span class="hud-value" id="lastWin">0</span>
+        </div>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Combo Pays</span>
+        <span class="hud-value">8+ of a kind</span>
+      </div>
+    </div>
+
+    <div class="grid-wrapper">
+      <div class="grid" id="grid"></div>
+
+      <div class="sidebar">
+        <button id="spinBtn" class="btn">SPIN</button>
+        <button id="musicToggle" class="btn-secondary">🔊 Music: On</button>
+      </div>
+    </div>
+
+    <div id="message" class="message"></div>
+    <div class="footer-note">
+      <span>Just for fun • No real money • Sweet Bonanza-inspired</span>
+    </div>
+  </div>
+
+  <script>
+    // Game config
+    const ROWS = 5;
+    const COLS = 6;
+    const INITIAL_BALANCE = 1000;
+    const BET_AMOUNT = 20;
+
+    const symbols = [
+      { emoji: "🍭", name: "Lollipop",   colorClass: "candy-0" },
+      { emoji: "🍉", name: "Watermelon", colorClass: "candy-1" },
+      { emoji: "🍇", name: "Grapes",     colorClass: "candy-2" },
+      { emoji: "🍓", name: "Strawberry", colorClass: "candy-3" },
+      { emoji: "🍬", name: "Candy",      colorClass: "candy-4" },
+      { emoji: "⭐", name: "Star",       colorClass: "candy-5" }
+    ];
+
+    const payTable = [
+      { minCount: 12, multiplier: 10 },
+      { minCount: 10, multiplier: 5 },
+      { minCount: 8,  multiplier: 2 }
+    ];
+
+    let balance = INITIAL_BALANCE;
+    let lastWin = 0;
+    let spinning = false;
+
+    // Audio (simple synthesized music + sfx)
+    let audioCtx = null;
+    let musicEnabled = true;
+
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        audioCtx = new AudioContext();
+      }
+    }
+
+    function playChord(baseFreq = 220) {
+      if (!audioCtx || !musicEnabled) return;
+      const now = audioCtx.currentTime;
+      const intervals = [0, 4, 7]; // major triad
+
+      intervals.forEach((interval, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = baseFreq * Math.pow(2, interval / 12);
+
+        gain.gain.setValueAtTime(0.0001, now + i * 0.02);
+        gain.gain.linearRampToValueAtTime(0.05, now + 0.08 + i * 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8 + i * 0.02);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + i * 0.02);
+        osc.stop(now + 0.9 + i * 0.02);
+      });
+    }
+
+    function playClick() {
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(600, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.08, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.18);
+    }
+
+    function playWinJingle(multiplier) {
+      if (!audioCtx || !musicEnabled) return;
+      const now = audioCtx.currentTime;
+      const notes = [523, 659, 784]; // C5, E5, G5
+      const gainLevel = multiplier >= 10 ? 0.16 : multiplier >= 5 ? 0.11 : 0.08;
+
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, now + i * 0.09);
+        gain.gain.linearRampToValueAtTime(gainLevel, now + 0.03 + i * 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28 + i * 0.09);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + i * 0.09);
+        osc.stop(now + 0.4 + i * 0.09);
+      });
+    }
+
+    // DOM
+    const gridEl = document.getElementById("grid");
+    const balanceEl = document.getElementById("balance");
+    const betEl = document.getElementById("bet");
+    const lastWinEl = document.getElementById("lastWin");
+    const spinBtn = document.getElementById("spinBtn");
+    const messageEl = document.getElementById("message");
+    const musicToggleBtn = document.getElementById("musicToggle");
+
+    function initGrid() {
+      gridEl.innerHTML = "";
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    function showMessage(text, isBigWin = false) {
+      messageEl.textContent = text;
+      messageEl.classList.add("visible");
+      messageEl.classList.toggle("big-win", isBigWin);
+
+      if (!isBigWin) {
+        setTimeout(() => {
+          messageEl.classList.remove("visible");
+        }, 1800);
+      }
+    }
+
+    function updateHUD() {
+      balanceEl.textContent = balance.toString();
+      betEl.textContent = BET_AMOUNT.toString();
+      lastWinEl.textContent = lastWin.toString();
+      if (lastWin > 0) {
+        lastWinEl.classList.add("win");
+        setTimeout(() => lastWinEl.classList.remove("win"), 1000);
+      }
+    }
+
+    function clearWinHighlights() {
+      document.querySelectorAll(".cell.win").forEach(cell => {
+        cell.classList.remove("win");
+      });
+    }
+
+    function animateCellsIn(cells) {
+      cells.forEach(cell => {
+        cell.classList.remove("pop-in");
+        // Force reflow so animation can re-trigger
+        void cell.offsetWidth;
+        cell.classList.add("pop-in");
+      });
+    }
+
+    function randomSymbolIndex() {
+      return Math.floor(Math.random() * symbols.length);
+    }
+
+    function spin() {
+      if (spinning) return;
+      if (balance < BET_AMOUNT) {
+        showMessage("Balance too low. Refresh to restart or reduce bet in code. 💸");
+        return;
+      }
+      spinning = true;
+      spinBtn.disabled = true;
+      spinBtn.classList.add("shine");
+      playClick();
+      ensureAudioContext();
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      playChord(246);
+
+      clearWinHighlights();
+      messageEl.classList.remove("visible", "big-win");
+
+      // Deduct bet
+      balance -= BET_AMOUNT;
+      updateHUD();
+
+      const cells = Array.from(document.querySelectorAll(".cell"));
+      const chosenSymbols = [];
+      const counts = new Array(symbols.length).fill(0);
+
+      // "Spinning" pre-animation (optional small wobble)
+      cells.forEach((cell, index) => {
+        const delay = (index % COLS) * 30;
+        cell.style.transition = "transform 0.18s ease";
+        setTimeout(() => {
+          cell.style.transform = "translateY(8px) scale(0.98) rotateX(10deg)";
+        }, delay);
+        setTimeout(() => {
+          cell.style.transform = "";
+        }, delay + 180);
+      });
+
+      // After a short delay, drop in new results
+      setTimeout(() => {
+        cells.forEach(cell => {
+          const idx = randomSymbolIndex();
+          const sym = symbols[idx];
+          chosenSymbols.push(idx);
+          counts[idx]++;
+
+          cell.textContent = sym.emoji;
+          cell.className = "cell " + sym.colorClass;
+        });
+
+        animateCellsIn(cells);
+
+        // Evaluate wins slightly after symbols appear
+        setTimeout(() => {
+          evaluateWin(chosenSymbols, counts);
+        }, 260);
+      }, 260);
+    }
+
+    function getHighestPay(count) {
+      for (const rule of payTable) {
+        if (count >= rule.minCount) return rule.multiplier;
+      }
+      return 0;
+    }
+
+    function evaluateWin(chosenSymbols, counts) {
+      let totalMultiplier = 0;
+      let bestMultiplier = 0;
+      let bestSymbolIndex = -1;
+
+      counts.forEach((count, idx) => {
+        const mult = getHighestPay(count);
+        if (mult > 0) {
+          totalMultiplier += mult;
+          if (mult > bestMultiplier) {
+            bestMultiplier = mult;
+            bestSymbolIndex = idx;
+          }
+        }
+      });
+
+      let winAmount = 0;
+      if (totalMultiplier > 0) {
+        winAmount = BET_AMOUNT * totalMultiplier;
+        balance += winAmount;
+        lastWin = winAmount;
+
+        // Highlight winning symbols
+        const cells = Array.from(document.querySelectorAll(".cell"));
+        cells.forEach((cell, index) => {
+          const symbolIndex = chosenSymbols[index];
+          if (getHighestPay(counts[symbolIndex]) > 0) {
+            cell.classList.add("win");
+          }
+        });
+
+        updateHUD();
+        const isBig = bestMultiplier >= 10 || winAmount >= BET_AMOUNT * 8;
+        const msg = isBig
+          ? `🍯 SWEET WIN! You hit ${winAmount} (x${totalMultiplier})`
+          : `Nice! You won ${winAmount} (x${totalMultiplier}).`;
+        showMessage(msg, isBig);
+        playWinJingle(bestMultiplier);
+      } else {
+        lastWin = 0;
+        updateHUD();
+        showMessage("No big candy combo. Try again! 🍬");
+      }
+
+      spinning = false;
+      spinBtn.disabled = false;
+      setTimeout(() => spinBtn.classList.remove("shine"), 600);
+    }
+
+    // Music toggle
+    musicToggleBtn.addEventListener("click", () => {
+      musicEnabled = !musicEnabled;
+      musicToggleBtn.textContent = musicEnabled ? "🔊 Music: On" : "🔈 Music: Off";
+      if (!musicEnabled && audioCtx) {
+        // Just lower volume by pausing context
+        audioCtx.suspend && audioCtx.suspend();
+      } else if (musicEnabled && audioCtx) {
+        audioCtx.resume && audioCtx.resume();
+      }
+    });
+
+    // Initialize
+    initGrid();
+    updateHUD();
+
+    spinBtn.addEventListener("click", () => {
+      ensureAudioContext();
+      spin();
+    });
+
+    // First small "welcome" chord after a short delay once user clicks anywhere
+    let welcomeMusicArmed = true;
+    document.addEventListener("click", () => {
+      if (!welcomeMusicArmed) return;
+      welcomeMusicArmed = false;
+      ensureAudioContext();
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      setTimeout(() => playChord(196), 150);
+    }, { once: true });
+  </script>
+</body>
+</html>

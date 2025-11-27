@@ -1,0 +1,19 @@
+{
+  "name": "Candy Blast Mini - Sweet Arcade Slot Game",
+  "short_name": "Candy Blast",
+  "description": "Play Candy Blast Mini, an exciting candy-themed arcade slot game! Match 8+ symbols to win, earn points, and claim exclusive NFT rewards.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#120c3b",
+  "theme_color": "#7a42ff",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/CandyBlast.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
