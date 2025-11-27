@@ -490,36 +490,46 @@ function App() {
   const splitOctCoin = async () => {
     if (!account) {
       console.log("No account connected");
-      return;
+      return Promise.reject("No account");
     }
 
-    const mistAmount = 1_00_000_000; // 0.1 OCT
+    return new Promise((resolve, reject) => {
+      const mistAmount = 1_00_000_000; // 0.1 OCT
 
-    const tx = new Transaction();
-    tx.setSender(account.address);
-    tx.setGasPrice(1_000);
-    tx.setGasBudget(10_000_000);
+      const tx = new Transaction();
+      tx.setSender(account.address);
+      tx.setGasPrice(1_000);
+      tx.setGasBudget(10_000_000);
 
-    const [coin] = tx.splitCoins(tx.gas, [mistAmount]);
-    tx.transferObjects([coin], account.address);
+      const [coin] = tx.splitCoins(tx.gas, [mistAmount]);
+      tx.transferObjects([coin], account.address);
 
-    signAndExecute({
-      transaction: tx
-    }, {
-      onError: (e) => {
-        console.log("Tx Failed! from here");
-        console.log(e);
-      },
-      onSuccess: async ({ digest }) => {
-        let p = await suiClient.waitForTransaction({
-          digest,
-          options: {
-            showEffects: true
+      signAndExecute({
+        transaction: tx
+      }, {
+        onError: (e) => {
+          console.log("Split Tx Failed:", e);
+          showMessage("❌ Coin split failed. Please try again.");
+          reset();
+          reject(e);
+        },
+        onSuccess: async ({ digest }) => {
+          try {
+            let p = await suiClient.waitForTransaction({
+              digest,
+              options: {
+                showEffects: true
+              }
+            });
+            console.log("Split Tx Successful!", p);
+            reset();
+            resolve(digest);
+          } catch (error) {
+            console.log("Error waiting for split transaction:", error);
+            reject(error);
           }
-        });
-        reset();
-        console.log("Tx Succesful!");
-      }
+        }
+      });
     });
   };
 
@@ -582,8 +592,8 @@ function App() {
     }
 
     const targetType = "0x2::oct::OCT";
-    const coins = data.data.filter((item) => item.coinType === targetType); 
-    const coinIds = coins.map((item) => item.coinObjectId);
+    let coins = data.data.filter((item) => item.coinType === targetType); 
+    let coinIds = coins.map((item) => item.coinObjectId);
     console.log("coinIds:", coinIds);
     
     if (coinIds.length === 0) {
@@ -592,18 +602,48 @@ function App() {
       return;
     }
     
+    // If only 1 coin, we need to split it first
     if(coinIds.length === 1) {
-      console.log("Required OCT split");
-      await splitOctCoin();
-      // After split, we need to refetch coins
-      showMessage("⏳ Please wait and try again after split...");
-      return;
+      console.log("Only 1 OCT coin found, splitting required");
+      showMessage("⏳ Splitting OCT coin, please wait...");
+      
+      try {
+        // Split the coin
+        await splitOctCoin();
+        
+        // Wait 3 seconds for blockchain to update
+        console.log("Waiting for blockchain to update...");
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // Refetch coins manually
+        const coinsResponse = await suiClient.getAllCoins({
+          owner: account.address
+        });
+        
+        coins = coinsResponse.data.filter((item) => item.coinType === targetType);
+        coinIds = coins.map((item) => item.coinObjectId);
+        
+        console.log("Refetched coinIds after split:", coinIds);
+        
+        if (coinIds.length === 0) {
+          showMessage("❌ Failed to get coins after split. Please try again.");
+          return;
+        }
+        
+        showMessage("✅ Coin split successful! Now getting points...");
+        
+      } catch (error) {
+        console.log("Error during split:", error);
+        showMessage("❌ Split failed. Please try again.");
+        return;
+      }
     }
     
     const octCoinId = coinIds[0];
     
     if (!octCoinId || typeof octCoinId !== 'string') {
       console.log("Invalid OCT coin");
+      showMessage("❌ Invalid coin ID. Please try again.");
       return;
     }
 
